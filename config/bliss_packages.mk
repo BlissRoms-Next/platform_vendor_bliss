@@ -64,6 +64,9 @@ PRODUCT_PACKAGES += \
     BlissPapers \
     SettingsIntelligenceGooglePrebuilt \
     NexusLauncherRelease \
+    WallpapersBReel2019 \
+    PixelLiveWallpaperPrebuilt \
+    MicropaperPrebuilt \
     NexusWallpapersStubPrebuilt2019Static \
     GalleryGoPrebuilt \
     PixelThemes \
