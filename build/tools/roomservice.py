@@ -315,3 +315,4 @@ if __name__ == '__main__':
     if not deps_only:
         fetch_device(device)
     fetch_dependencies(device)
+

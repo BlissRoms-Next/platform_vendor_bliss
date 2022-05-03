@@ -80,12 +80,11 @@ function breakfast()
         # No arguments, so let's have the full menu
         lunch
     else
-        echo "z$target" | grep -q "-"
-        if [ $? -eq 0 ]; then
+        if [[ "$target" =~ -(user|userdebug|eng)$ ]]; then
             # A buildtype was specified, assume a full device name
             lunch $target
         else
-            # This is probably just the BlissRoms model name
+            # This is probably just the Bliss model name
             if [ -z "$variant" ]; then
                 variant="userdebug"
             fi
@@ -101,7 +100,7 @@ alias bib=breakfast
 function eat()
 {
     if [ "$OUT" ] ; then
-        ZIPPATH=`ls -tr "$OUT"/Bliss-*.zip | tail -1`
+        ZIPPATH=`ls -tr "$OUT"/bliss-*.zip | tail -1`
         if [ ! -f $ZIPPATH ] ; then
             echo "Nothing to eat"
             return 1
@@ -126,7 +125,7 @@ function eat()
 
 function omnom()
 {
-    blissify $*
+    brunch $*
     eat
 }
 
@@ -263,17 +262,17 @@ function blissremote()
     if [ $BLISS = "false" ]
     then
         local PROJECT=$(echo $REMOTE | sed -e "s#platform/#android/#g; s#/#_#g")
-        local PFX="BLISS/"
+        local PFX="BlissRoms/"
     else
         local PROJECT=$REMOTE
     fi
 
-    local BLISS_USER=$(git config --get review.review.blissroms.com.username)
+    local BLISS_USER=$(git config --get review.review.blissroms.org.username)
     if [ -z "$BLISS_USER" ]
     then
-        git remote add bliss ssh://review.blissroms.com:29418/$PFX$PROJECT
+        git remote add bliss ssh://review.blissroms.org:29418/$PFX$PROJECT
     else
-        git remote add bliss ssh://$BLISS_USER@review.blissroms.com:29418/$PFX$PROJECT
+        git remote add bliss ssh://$BLISS_USER@review.blissroms.org:29418/$PFX$PROJECT
     fi
     echo "Remote 'bliss' created"
 }
@@ -343,7 +342,7 @@ function githubremote()
 
     local PROJECT=$(echo $REMOTE | sed -e "s#platform/#android/#g; s#/#_#g")
 
-    git remote add github https://github.com/LineageOS/$PROJECT
+    git remote add github https://github.com/BlissRoms/$PROJECT
     echo "Remote 'github' created"
 }
 
@@ -446,7 +445,7 @@ function makerecipe() {
 }
 
 function blissgerrit() {
-    if [ "$(__detect_shell)" = "zsh" ]; then
+    if [ "$(basename $SHELL)" = "zsh" ]; then
         # zsh does not define FUNCNAME, derive from funcstack
         local FUNCNAME=$funcstack[1]
     fi
@@ -455,7 +454,7 @@ function blissgerrit() {
         $FUNCNAME help
         return 1
     fi
-    local user=`git config --get review.review.blissroms.com.username`
+    local user=`git config --get review.review.blissroms.org.username`
     local review=`git config --get remote.github.review`
     local project=`git config --get remote.github.projectname`
     local command=$1
@@ -581,7 +580,7 @@ EOF
             esac
             shift
             git push $@ ssh://$user@$review:29418/$project \
-                $local_branch:refs/for/$remote_branch || return 1
+                ${local_branch}:refs/for/$remote_branch || return 1
             ;;
         changes|for)
             if [ "$FUNCNAME" = "blissgerrit" ]; then
@@ -690,7 +689,7 @@ function blissrebase() {
     local dir="$(gettop)/$repo"
 
     if [ -z $repo ] || [ -z $refs ]; then
-        echo "LineageOS Gerrit Rebase Usage: "
+        echo "BlissRoms Gerrit Rebase Usage: "
         echo "      blissrebase <path to project> <patch IDs on Gerrit>"
         echo "      The patch IDs appear on the Gerrit commands that are offered."
         echo "      They consist on a series of numbers and slashes, after the text"
@@ -712,7 +711,7 @@ function blissrebase() {
     echo "Bringing it up to date..."
     repo sync .
     echo "Fetching change..."
-    git fetch "https://review.blissroms.com/p/$repo" "refs/changes/$refs" && git cherry-pick FETCH_HEAD
+    git fetch "http://review.blissroms.org/p/$repo" "refs/changes/$refs" && git cherry-pick FETCH_HEAD
     if [ "$?" != "0" ]; then
         echo "Error cherry-picking. Not uploading!"
         return
@@ -725,7 +724,7 @@ function blissrebase() {
 }
 
 function mka() {
-    m -j "$@"
+    m "$@"
 }
 
 function cmka() {
@@ -845,7 +844,7 @@ function dopush()
         CHKPERM="/data/local/tmp/chkfileperm.sh"
 (
 cat <<'EOF'
-#!/system/xbin/sh
+#!/system/bin/sh
 FILE=$@
 if [ -e $FILE ]; then
     ls -l $FILE | awk '{k=0;for(i=0;i<=8;i++)k+=((substr($1,i+2,1)~/[rwx]/)*2^(8-i));if(k)printf("%0o ",k);print}' | cut -d ' ' -f1
@@ -862,9 +861,9 @@ EOF
 
     stop_n_start=false
     for TARGET in $(echo $LOC | tr " " "\n" | sed "s#.*${RELOUT}##" | sort | uniq); do
-        # Make sure file is in $OUT/system, $OUT/data, $OUT/odm, $OUT/oem, $OUT/product, $OUT/product_services or $OUT/vendor
+        # Make sure file is in $OUT/{system,system_ext,data,odm,oem,product,product_services,vendor}
         case $TARGET in
-            /system/*|/data/*|/odm/*|/oem/*|/product/*|/product_services/*|/vendor/*)
+            /system/*|/system_ext/*|/data/*|/odm/*|/oem/*|/product/*|/product_services/*|/vendor/*)
                 # Get out file from target (i.e. /system/bin/adb)
                 FILE=$OUT$TARGET
             ;;
@@ -891,7 +890,7 @@ EOF
                 fi
                 adb shell restorecon "$TARGET"
             ;;
-            /system/priv-app/SystemUI/SystemUI.apk|/system/framework/*)
+            */SystemUI.apk|*/framework/*)
                 # Only need to stop services once
                 if ! $stop_n_start; then
                     adb shell stop

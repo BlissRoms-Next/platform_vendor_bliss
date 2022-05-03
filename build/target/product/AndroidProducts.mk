@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018-2019 The LineageOS Project
+# Copyright (C) 2018-2021 The LineageOS Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,13 +15,9 @@
 #
 
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/bliss_arm.mk \
-    $(LOCAL_DIR)/bliss_arm64.mk \
-    $(LOCAL_DIR)/bliss_x86.mk \
-    $(LOCAL_DIR)/bliss_x86_64.mk
+    $(LOCAL_DIR)/bliss_gsi_arm.mk \
+    $(LOCAL_DIR)/bliss_gsi_arm64.mk \
 
 COMMON_LUNCH_CHOICES := \
-    bliss_arm-userdebug \
-    bliss_arm64-userdebug \
-    bliss_x86-userdebug \
-    bliss_x86_64-userdebug
+    bliss_gsi_arm-userdebug \
+    bliss_gsi_arm64-userdebug \

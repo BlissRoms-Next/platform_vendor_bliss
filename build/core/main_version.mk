@@ -4,6 +4,7 @@ ADDITIONAL_SYSTEM_PROPERTIES += \
     ro.build.fingerprint=$(BUILD_FINGERPRINT)
 endif
 
+# BlissRoms version system
 ADDITIONAL_SYSTEM_PROPERTIES += \
   ro.bliss.codename=$(BLISS_CODENAME) \
   ro.bliss.version=$(BLISS_VERSION) \
